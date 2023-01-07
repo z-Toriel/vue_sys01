@@ -64,6 +64,7 @@
       <el-table-column label="作者" prop="author"></el-table-column>
       <el-table-column label="类型" prop="category"></el-table-column>
       <el-table-column label="地区" prop="region"></el-table-column>
+      <el-table-column label="地区" prop="location"></el-table-column>
       <el-table-column label="出版社" prop="press"></el-table-column>
       <el-table-column label="数量" prop="total"></el-table-column>
       <el-table-column label="状态" prop="statu">

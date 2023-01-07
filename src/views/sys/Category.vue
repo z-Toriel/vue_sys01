@@ -37,6 +37,7 @@
       <el-table-column type="selection"></el-table-column>
       <el-table-column label="ID" prop="id"></el-table-column>
       <el-table-column label="类型名" prop="name"></el-table-column>
+      <el-table-column label="位置" prop="location"></el-table-column>
       <el-table-column label="状态" prop="statu">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.statu == 1" type="success" size="mini"
@@ -83,7 +84,7 @@
 
     <!-- 新增或编辑类型对话框 -->
     <el-dialog
-      title="订单信息"
+      title="类别信息"
       :visible.sync="dialogFormVisble"
       width="600px"
       @closed="resetForm('categoryForm')"
@@ -94,8 +95,11 @@
         label-width="80px"
         :rules="rules"
       >
-        <el-form-item label="书籍类型" prop="name">
+        <el-form-item label="类型" prop="name">
           <el-input v-model="categoryForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="位置" prop="location">
+          <el-input v-model="categoryForm.location"></el-input>
         </el-form-item>
         <el-form-item label="状态" prop="statu">
           <el-radio-group v-model="categoryForm.statu">
