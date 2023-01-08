@@ -41,26 +41,24 @@
       @selection-change="selectionChange"
     >
       <el-table-column type="selection"></el-table-column>
-      <el-table-column label="订单ID" prop="id"></el-table-column>
+      <el-table-column label="借阅ID" prop="id"></el-table-column>
       <el-table-column label="用户ID" prop="uid"></el-table-column>
-      <el-table-column label="电话" prop="phone"></el-table-column>
-      <el-table-column label="排片ID" prop="aid"></el-table-column>
-      <el-table-column label="座位号" prop="seates"></el-table-column>
-      <el-table-column label="价格" prop="price"></el-table-column>
-      <el-table-column label="支付时间" prop="paid"></el-table-column>
+      <el-table-column label="书籍ID" prop="bid"></el-table-column>
+      <el-table-column label="借阅日期" prop="borrowDate"></el-table-column>
+      <el-table-column label="归还日期" prop="returnDate"></el-table-column>
       <el-table-column label="状态" prop="statu">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.statu == 0" type="success" size="mini"
-            >等待支付</el-tag
+            >正在借阅</el-tag
           >
-          <el-tag v-else-if="scope.row.statu == 1" type="danger" size="mini"
-            >支付失败</el-tag
+          <el-tag v-else-if="scope.row.statu == 1" type="success" size="mini"
+            >正常还书</el-tag
           >
-          <el-tag v-else-if="scope.row.statu == 2" type="success" size="mini"
-            >支付成功</el-tag
+          <el-tag v-else-if="scope.row.statu == 2" type="info" size="mini"
+            >逾期还书</el-tag
           >
-          <el-tag v-else-if="scope.row.statu == 3" type="info" size="mini"
-            >已被撤销</el-tag
+          <el-tag v-else-if="scope.row.statu == 3" type="danger" size="mini"
+            >书籍破损</el-tag
           >
         </template>
       </el-table-column>
@@ -188,18 +186,19 @@ export default {
     getOrderList() {
       //获取订单列表
       this.$axios
-        .get("/system/order/list", {
+        .get("/system/borrow/list", {
           params: {
             name: this.searchForm.orderId,
-            // current: this.current,
-            // size: this.size,
+            current: this.current,
+            size: this.size,
           },
         })
         .then((response) => {
-          this.tableData = response.data.data;
-          // this.size = response.data.data.size;
-          // this.current = response.data.data.current;
-          // this.total = response.data.data.total;
+          console.log("reponse的结果Borrow:",response)
+          this.tableData = response.data.data.records;
+          this.size = response.data.data.size;
+          this.current = response.data.data.current;
+          this.total = response.data.data.total;
         });
     },
     deleteOrder(id) {
