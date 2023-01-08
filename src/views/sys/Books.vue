@@ -13,7 +13,7 @@
           v-model="searchForm.categoryId"
           filterable
           clearable
-          placeholder="请选择电影类型"
+          placeholder="请选择书籍类型"
         >
           <el-option
             v-for="item in categoryList"
@@ -66,7 +66,9 @@
       <el-table-column label="地区" prop="region"></el-table-column>
       <el-table-column label="地区" prop="location"></el-table-column>
       <el-table-column label="出版社" prop="press"></el-table-column>
-      <el-table-column label="数量" prop="total"></el-table-column>
+      <el-table-column label="剩余数量" prop="remain"></el-table-column>
+      <el-table-column label="总数量" prop="total"></el-table-column>
+      <el-table-column label="价格" prop="price"></el-table-column>
       <el-table-column label="状态" prop="statu">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.statu == 1" type="success" size="mini"
@@ -83,7 +85,7 @@
         width="180px"
       ></el-table-column>
 
-      <el-table-column label="操作" width="280">
+      <el-table-column label="操作" width="100">
         <template slot-scope="scope">
           <el-button type="text" @click="editBook(scope.row.id)"
             >编辑</el-button
@@ -181,6 +183,14 @@
             v-model="bookForm.total"
             :min="1"
             :max="10"
+          ></el-input-number>
+        </el-form-item>
+
+        <el-form-item label="价格" prop="price">
+          <el-input-number
+            v-model="bookForm.price"
+            :min="0"
+            :max="100"
           ></el-input-number>
         </el-form-item>
 
