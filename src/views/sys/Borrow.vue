@@ -42,8 +42,8 @@
     >
       <el-table-column type="selection"></el-table-column>
       <el-table-column label="借阅ID" prop="id"></el-table-column>
-      <el-table-column label="用户ID" prop="uid"></el-table-column>
-      <el-table-column label="书籍ID" prop="bid"></el-table-column>
+      <el-table-column label="用户名" prop="uname"></el-table-column>
+      <el-table-column label="书籍名" prop="bname"></el-table-column>
       <el-table-column label="借阅日期" prop="borrowDate"></el-table-column>
       <el-table-column label="归还日期" prop="returnDate"></el-table-column>
       <el-table-column label="状态" prop="statu">
@@ -110,34 +110,24 @@
         <el-form-item label="用户id" prop="uid">
           <el-input v-model="orderForm.uid"></el-input>
         </el-form-item>
-        <el-form-item label="电话" prop="phone">
-          <el-input v-model="orderForm.phone"></el-input>
+        <el-form-item label="书籍id" prop="bid">
+          <el-input v-model="orderForm.bid"></el-input>
         </el-form-item>
-        <el-form-item label="排片ID" prop="aid">
-          <el-input v-model="orderForm.aid"></el-input>
-        </el-form-item>
-        <el-form-item label="座位号" prop="seates">
-          <el-input v-model="orderForm.seates"></el-input>
-        </el-form-item>
-        <el-form-item label="价格" prop="price">
-          <el-input v-model="orderForm.price"></el-input>
-        </el-form-item>
-        <el-form-item label="支付时间" prop="paid">
+        <el-form-item label="借阅日期" prop="borrowDate">
           <el-date-picker
-            v-model="orderForm.paid"
+            v-model="orderForm.borrowDate"
             type="date"
             placeholder="选择日期"
             value-format="yyyy-MM-dd"
           >
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="状态" prop="statu">
-          <el-radio-group v-model="orderForm.statu">
-            <el-radio :label="0">等待支付</el-radio>
-            <el-radio :label="1">支付失败</el-radio>
-            <el-radio :label="2">支付成功</el-radio>
-            <el-radio :label="3">已被撤销</el-radio>
-          </el-radio-group>
+        <el-form-item label="借阅天数" prop="days">
+          <el-input-number
+            v-model="orderForm.days"
+            :min="1"
+            :max="7"
+          ></el-input-number>
         </el-form-item>
       </el-form>
       <div slot="footer">
@@ -194,7 +184,7 @@ export default {
           },
         })
         .then((response) => {
-          console.log("reponse的结果Borrow:",response)
+          console.log("reponse的结果Borrow:", response);
           this.tableData = response.data.data.records;
           this.size = response.data.data.size;
           this.current = response.data.data.current;
@@ -216,7 +206,7 @@ export default {
           message: "删除成功",
           type: "success",
           onClose: () => {
-            console.log("删除成功后执行的方法")
+            console.log("删除成功后执行的方法");
             this.getOrderList();
           },
         });
@@ -231,7 +221,6 @@ export default {
         this.dialogFormVisble = true;
       });
     },
-
 
     handleSizeChange(val) {
       this.size = val;
@@ -248,17 +237,32 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$axios
-            .post("/system/user/" + (this.orderForm.id ? "update" : "save"))
+            .post(
+              "/system/borrow/" + (this.orderForm.id ? "update" : "save"),
+              this.orderForm
+            )
             .then((response) => {
-              this.$message({
-                showClose: true,
-                message: "保存成功",
-                type: "success",
-                onClose: () => {
-                  //重新请求用户列表
-                  this.getOrderList();
-                },
-              });
+              if (response.data.code == 200) {
+                this.$message({
+                  showClose: true,
+                  message: "保存成功",
+                  type: "success",
+                  onClose: () => {
+                    //重新请求用户列表
+                    this.getOrderList();
+                  },
+                });
+              } else {
+                this.$message({
+                  showClose: true,
+                  message: "失败",
+                  type: "info",
+                  onClose: () => {
+                    //重新请求用户列表
+                    this.getOrderList();
+                  },
+                });
+              }
             });
           this.dialogFormVisble = false;
         } else {
