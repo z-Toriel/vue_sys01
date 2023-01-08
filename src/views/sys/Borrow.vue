@@ -13,24 +13,9 @@
         <el-button type="primary" @click="dialogFormVisble = true"
           >新建</el-button
         >
-        <template>
-          <el-popconfirm title="确定删除吗？" @confirm="deleteOrder()">
-            <el-button slot="reference" type="danger" :disabled="deleteBtnStu"
-              >批量删除</el-button
-            >
-          </el-popconfirm>
-        </template>
       </el-form-item>
     </el-form>
 
-    <!-- 订单信息表 -->
-    <!-- 
-      stripe：是否为斑马纹 
-      border：是否有边框
-      default-expand-all：默认展示所有
-      :cell-style="{ padding: 2 }" 边距为2
-      @selection-change="selectionChange" 多选的时候绑定事件
-    -->
     <el-table
       :data="tableData"
       stripe
@@ -48,36 +33,45 @@
       <el-table-column label="归还日期" prop="returnDate"></el-table-column>
       <el-table-column label="状态" prop="statu">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.statu == 0" type="success" size="mini"
-            >正在借阅</el-tag
-          >
+          <el-tag v-if="scope.row.statu == 0" size="mini">正在借阅</el-tag>
           <el-tag v-else-if="scope.row.statu == 1" type="success" size="mini"
             >正常还书</el-tag
           >
           <el-tag v-else-if="scope.row.statu == 2" type="info" size="mini"
             >逾期还书</el-tag
           >
-          <el-tag v-else-if="scope.row.statu == 3" type="danger" size="mini"
+          <el-tag v-else-if="scope.row.statu == 3" type="warning" size="mini"
             >书籍破损</el-tag
+          >
+          <el-tag v-else-if="scope.row.statu == 4" type="danger" size="mini"
+            >书籍丢失</el-tag
           >
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="280">
-        <template slot-scope="scope">
-          <el-button type="text" @click="editOrder(scope.row.id)"
-            >编辑</el-button
-          >
+      <el-table-column label="操作" width="320">
+        <template slot-scope="scope" v-if="scope.row.statu == 0">
+          <template v-if="isNormal(scope.row.returnDate)">
+            <el-button type="text" @click="editOrder(scope.row.id)"
+              >正常归还</el-button
+            >
+            <el-divider direction="vertical"></el-divider>
+          </template>
 
+          <template v-if="isOverdue(scope.row.returnDate)">
+            <el-button type="text" @click="overdue(scope.row.id)"
+              >逾期归还</el-button
+            >
+            <el-divider direction="vertical"></el-divider>
+          </template>
+
+          <el-button type="text" @click="editOrder(scope.row.id)"
+            >书籍破损</el-button
+          >
           <el-divider direction="vertical"></el-divider>
 
-          <template>
-            <el-popconfirm
-              title="确定删除该订单吗？"
-              @confirm="deleteOrder(scope.row.id)"
-            >
-              <el-button slot="reference" type="text">删除</el-button>
-            </el-popconfirm>
-          </template>
+          <el-button type="text" @click="editOrder(scope.row.id)"
+            >书籍丢失</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -146,12 +140,10 @@ export default {
     return {
       searchForm: {},
       dialogFormVisble: false, //添加或修改的对话框是否显示
-      deleteBtnStu: true, // 批量删除的按钮是否使用
       tableData: [], // 表格中的数据
       current: 1,
       size: 10,
       total: 0,
-      selection: [], // 用于保存批量删除的数据
       orderForm: {}, // 用于保存添加或修改用户的信息
       rules: {
         uid: [{ required: true, message: "请输入用户ID", trigger: "blur" }],
@@ -168,11 +160,6 @@ export default {
     this.getOrderList();
   },
   methods: {
-    selectionChange(val) {
-      //批量删除的change
-      this.selection = val;
-      this.deleteBtnStu = this.selection.length == 0;
-    },
     getOrderList() {
       //获取订单列表
       this.$axios
@@ -191,35 +178,17 @@ export default {
           this.total = response.data.data.total;
         });
     },
-    deleteOrder(id) {
-      // 删除订单的方法
-      let orderIds = [];
-      id
-        ? orderIds.push(id)
-        : this.selection.forEach((item) => {
-            orderIds.push(item.id);
-          });
-      console.log(orderIds);
-      this.$axios.post("/system/order/delete", orderIds).then((response) => {
-        this.$message({
-          showClose: true,
-          message: "删除成功",
-          type: "success",
-          onClose: () => {
-            console.log("删除成功后执行的方法");
-            this.getOrderList();
-          },
-        });
-      });
-    },
 
     editOrder(id) {
       // 编辑用户的方法
       console.log("用户id：", id);
-      this.$axios.get("/system/order/info/" + id).then((response) => {
-        this.orderForm = response.data.data;
-        this.dialogFormVisble = true;
+      this.$axios.post("/system/borrow/normalReturn/" + id).then((response) => {
+        console.log("response:", response);
       });
+    },
+
+    overdue(){
+      
     },
 
     handleSizeChange(val) {
@@ -277,6 +246,20 @@ export default {
       this.orderForm = {};
       this.dialogFormVisble = false;
     },
+    isOverdue(rdate) {
+      let now = new Date();
+      let returnDate = new Date(rdate);
+      return now > returnDate;
+      // return false;
+    },
+    isNormal(rdate){
+      let now = new Date();
+      let returnDate = new Date(rdate);
+      return now < returnDate;
+    }
+  }, // methods end
+  computed: {
+    
   },
 };
 </script>
