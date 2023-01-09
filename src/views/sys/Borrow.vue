@@ -4,8 +4,8 @@
     <el-form ref="form" :model="searchForm" label-width="80px" inline>
       <el-form-item>
         <el-input
-          v-model="searchForm.orderId"
-          placeholder="请输入搜索的名称"
+          v-model="searchForm.bname"
+          placeholder="请输入书籍名"
         ></el-input>
       </el-form-item>
       <el-form-item>
@@ -23,14 +23,15 @@
       default-expand-all
       :cell-style="{ padding: 2 }"
       style="width: 100%; margin-bottom: 20px"
-      @selection-change="selectionChange"
     >
-      <el-table-column type="selection"></el-table-column>
       <el-table-column label="借阅ID" prop="id"></el-table-column>
       <el-table-column label="用户名" prop="uname"></el-table-column>
       <el-table-column label="书籍名" prop="bname"></el-table-column>
       <el-table-column label="借阅日期" prop="borrowDate"></el-table-column>
-      <el-table-column label="归还日期" prop="returnDate"></el-table-column>
+      <el-table-column label="归还期限" prop="returnDate"></el-table-column>
+      <el-table-column label="归还日期" prop="realReturnDate"></el-table-column>
+      <el-table-column label="赔偿金额" prop="compensation"></el-table-column>
+
       <el-table-column label="状态" prop="statu">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.statu == 0" size="mini">正在借阅</el-tag>
@@ -48,28 +49,41 @@
           >
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="320">
+      <el-table-column label="操作" width="240">
         <template slot-scope="scope" v-if="scope.row.statu == 0">
           <template v-if="isNormal(scope.row.returnDate)">
-            <el-button type="text" @click="editOrder(scope.row.id)"
-              >正常归还</el-button
+            <el-popconfirm
+              title="确定归还该书籍吗？"
+              @confirm="editOrder(scope.row.id)"
             >
+              <el-button slot="reference" type="text" style="color:#67c23a">正常归还</el-button>
+            </el-popconfirm>
             <el-divider direction="vertical"></el-divider>
           </template>
+
 
           <template v-if="isOverdue(scope.row.returnDate)">
-            <el-button type="text" @click="overdue(scope.row.id)"
-              >逾期归还</el-button
+            <el-popconfirm
+              title="确定归还该书籍吗？"
+              @confirm="overdue(scope.row.id,scope.row.returnDate)"
             >
+              <el-button slot="reference" type="text" style="color:#909399">逾期归还</el-button>
+            </el-popconfirm>
             <el-divider direction="vertical"></el-divider>
           </template>
 
-          <el-button type="text" @click="editOrder(scope.row.id)"
+          <el-button
+            type="text"
+            @click="editOrder(scope.row.id)"
+            style="color: #e6a23c"
             >书籍破损</el-button
           >
           <el-divider direction="vertical"></el-divider>
 
-          <el-button type="text" @click="editOrder(scope.row.id)"
+          <el-button
+            type="text"
+            @click="editOrder(scope.row.id)"
+            style="color: #f56c6c"
             >书籍丢失</el-button
           >
         </template>
@@ -107,7 +121,7 @@
         <el-form-item label="书籍id" prop="bid">
           <el-input v-model="orderForm.bid"></el-input>
         </el-form-item>
-        <el-form-item label="借阅日期" prop="borrowDate">
+        <!-- <el-form-item label="借阅日期" prop="borrowDate">
           <el-date-picker
             v-model="orderForm.borrowDate"
             type="date"
@@ -115,7 +129,7 @@
             value-format="yyyy-MM-dd"
           >
           </el-date-picker>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="借阅天数" prop="days">
           <el-input-number
             v-model="orderForm.days"
@@ -147,12 +161,8 @@ export default {
       orderForm: {}, // 用于保存添加或修改用户的信息
       rules: {
         uid: [{ required: true, message: "请输入用户ID", trigger: "blur" }],
-        phone: [{ required: true, message: "请输入手机号", trigger: "blur" }],
-        aid: [{ required: true, message: "请输入排片id", trigger: "blur" }],
-        seates: [{ required: true, message: "请输入座位号", trigger: "blur" }],
-        price: [{ required: true, message: "请输入价格", trigger: "blur" }],
-        paid: [{ required: true, message: "请选择支付时间", trigger: "blur" }],
-        statu: [{ required: true, message: "请选择状态", trigger: "blur" }],
+        bid: [{ required: true, message: "请输入书籍id", trigger: "blur" }],
+        days: [{required: true, message: "请输入借阅天数", trigger: "blur" }],
       },
     };
   }, // dataend
@@ -165,7 +175,7 @@ export default {
       this.$axios
         .get("/system/borrow/list", {
           params: {
-            name: this.searchForm.orderId,
+            bname: this.searchForm.bname,
             current: this.current,
             size: this.size,
           },
@@ -179,16 +189,41 @@ export default {
         });
     },
 
+    // 正常还书
     editOrder(id) {
       // 编辑用户的方法
       console.log("用户id：", id);
       this.$axios.post("/system/borrow/normalReturn/" + id).then((response) => {
         console.log("response:", response);
+        this.$message({
+          showClose: true,
+          message: "归还成功",
+          type: "success",
+          onClose: () => {
+            //重新请求用户列表
+            this.getOrderList();
+          },
+        });
       });
     },
 
-    overdue(){
-      
+    // 逾期还书
+    overdue(id,returnDate) {
+      let now = new Date()
+      returnDate = new Date(returnDate)
+      const overdueDays = parseInt((now-returnDate)/(24*60*60*1000))
+      this.$axios.post("/system/borrow/overdueReturn/"+id+"/"+overdueDays).then((response) => {
+        console.log("response:", response);
+        this.$message({
+          showClose: true,
+          message: "归还成功",
+          type: "success",
+          onClose: () => {
+            //重新请求用户列表
+            this.getOrderList();
+          },
+        });
+      });
     },
 
     handleSizeChange(val) {
@@ -252,15 +287,13 @@ export default {
       return now > returnDate;
       // return false;
     },
-    isNormal(rdate){
+    isNormal(rdate) {
       let now = new Date();
       let returnDate = new Date(rdate);
       return now < returnDate;
-    }
+    },
   }, // methods end
-  computed: {
-    
-  },
+  computed: {},
 };
 </script>
 
