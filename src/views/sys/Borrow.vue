@@ -9,6 +9,12 @@
         ></el-input>
       </el-form-item>
       <el-form-item>
+        <el-input
+          v-model="searchForm.uname"
+          placeholder="请输入用户名"
+        ></el-input>
+      </el-form-item>
+      <el-form-item>
         <el-button @click="getOrderList()">搜索</el-button>
         <el-button type="primary" @click="dialogFormVisble = true"
           >新建</el-button
@@ -72,13 +78,16 @@
             <el-divider direction="vertical"></el-divider>
           </template>
 
-          <el-button
-            type="text"
-            @click="editOrder(scope.row.id)"
-            style="color: #e6a23c"
-            >书籍破损</el-button
-          >
-          <el-divider direction="vertical"></el-divider>
+          <template>
+            <el-popconfirm
+              title="以破损的方式归还该书籍？"
+              @confirm="breakReturn(scope.row.id)"
+            >
+              <el-button slot="reference" type="text" style="color:#e6a23c">书籍破损</el-button>
+            </el-popconfirm>
+            <el-divider direction="vertical"></el-divider>
+          </template>
+
 
           <el-button
             type="text"
@@ -176,6 +185,7 @@ export default {
         .get("/system/borrow/list", {
           params: {
             bname: this.searchForm.bname,
+            uname: this.searchForm.uname,
             current: this.current,
             size: this.size,
           },
@@ -226,6 +236,22 @@ export default {
       });
     },
 
+    // 书籍破损
+    breakReturn(id){
+      this.$axios.post("/system/borrow/breakReturn/"+id).then((response) => {
+        console.log("response:", response);
+        this.$message({
+          showClose: true,
+          message: "书籍归还成功（破损）",
+          type: "success",
+          onClose: () => {
+            //重新请求用户列表
+            this.getOrderList();
+          },
+        });
+      });
+    },
+
     handleSizeChange(val) {
       this.size = val;
       this.getOrderList();
@@ -242,7 +268,7 @@ export default {
         if (valid) {
           this.$axios
             .post(
-              "/system/borrow/" + (this.orderForm.id ? "update" : "save"),
+              "/system/borrow/save",
               this.orderForm
             )
             .then((response) => {
@@ -251,16 +277,6 @@ export default {
                   showClose: true,
                   message: "保存成功",
                   type: "success",
-                  onClose: () => {
-                    //重新请求用户列表
-                    this.getOrderList();
-                  },
-                });
-              } else {
-                this.$message({
-                  showClose: true,
-                  message: "失败",
-                  type: "info",
                   onClose: () => {
                     //重新请求用户列表
                     this.getOrderList();
