@@ -88,13 +88,16 @@
             <el-divider direction="vertical"></el-divider>
           </template>
 
+          <template>
+            <el-popconfirm
+              title="确定该书籍已经丢失？"
+              @confirm="lost(scope.row.id)"
+            >
+              <el-button slot="reference" type="text" style="color:#f56c6c">书籍丢失</el-button>
+            </el-popconfirm>
+          </template>
 
-          <el-button
-            type="text"
-            @click="editOrder(scope.row.id)"
-            style="color: #f56c6c"
-            >书籍丢失</el-button
-          >
+
         </template>
       </el-table-column>
     </el-table>
@@ -243,7 +246,24 @@ export default {
         this.$message({
           showClose: true,
           message: "书籍归还成功（破损）",
-          type: "success",
+          type: "warning",
+          onClose: () => {
+            //重新请求用户列表
+            this.getOrderList();
+          },
+        });
+      });
+    },
+
+
+    // 书籍丢失
+    lost(id){
+      this.$axios.post("/system/borrow/lost/"+id).then((response) => {
+        console.log("response:", response);
+        this.$message({
+          showClose: true,
+          message: "该书籍已丢失",
+          type: "error",
           onClose: () => {
             //重新请求用户列表
             this.getOrderList();
