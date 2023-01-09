@@ -15,6 +15,23 @@
         ></el-input>
       </el-form-item>
       <el-form-item>
+        <el-select
+          v-model="searchForm.statuCode"
+          filterable
+          clearable
+          placeholder="请选择状态"
+        >
+          <el-option
+            v-for="item in statuCodeList"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
+        <!-- <el-input v-model="bookForm.category"></el-input> -->
+      </el-form-item>
+      <el-form-item>
         <el-button @click="getOrderList()">搜索</el-button>
         <el-button type="primary" @click="dialogFormVisble = true"
           >新建</el-button
@@ -62,18 +79,21 @@
               title="确定归还该书籍吗？"
               @confirm="editOrder(scope.row.id)"
             >
-              <el-button slot="reference" type="text" style="color:#67c23a">正常归还</el-button>
+              <el-button slot="reference" type="text" style="color: #67c23a"
+                >正常归还</el-button
+              >
             </el-popconfirm>
             <el-divider direction="vertical"></el-divider>
           </template>
 
-
           <template v-if="isOverdue(scope.row.returnDate)">
             <el-popconfirm
               title="确定归还该书籍吗？"
-              @confirm="overdue(scope.row.id,scope.row.returnDate)"
+              @confirm="overdue(scope.row.id, scope.row.returnDate)"
             >
-              <el-button slot="reference" type="text" style="color:#909399">逾期归还</el-button>
+              <el-button slot="reference" type="text" style="color: #909399"
+                >逾期归还</el-button
+              >
             </el-popconfirm>
             <el-divider direction="vertical"></el-divider>
           </template>
@@ -83,7 +103,9 @@
               title="以破损的方式归还该书籍？"
               @confirm="breakReturn(scope.row.id)"
             >
-              <el-button slot="reference" type="text" style="color:#e6a23c">书籍破损</el-button>
+              <el-button slot="reference" type="text" style="color: #e6a23c"
+                >书籍破损</el-button
+              >
             </el-popconfirm>
             <el-divider direction="vertical"></el-divider>
           </template>
@@ -93,11 +115,11 @@
               title="确定该书籍已经丢失？"
               @confirm="lost(scope.row.id)"
             >
-              <el-button slot="reference" type="text" style="color:#f56c6c">书籍丢失</el-button>
+              <el-button slot="reference" type="text" style="color: #f56c6c"
+                >书籍丢失</el-button
+              >
             </el-popconfirm>
           </template>
-
-
         </template>
       </el-table-column>
     </el-table>
@@ -171,10 +193,17 @@ export default {
       size: 10,
       total: 0,
       orderForm: {}, // 用于保存添加或修改用户的信息
+      statuCodeList:[
+        {label:"正在借阅",value:"0"},
+        {label:"正常还书",value:"1"},
+        {label:"逾期还书",value:"2"},
+        {label:"书籍丢失",value:"3"},
+        {label:"书籍破损",value:"4"},
+      ],
       rules: {
         uid: [{ required: true, message: "请输入用户ID", trigger: "blur" }],
         bid: [{ required: true, message: "请输入书籍id", trigger: "blur" }],
-        days: [{required: true, message: "请输入借阅天数", trigger: "blur" }],
+        days: [{ required: true, message: "请输入借阅天数", trigger: "blur" }],
       },
     };
   }, // dataend
@@ -189,6 +218,7 @@ export default {
           params: {
             bname: this.searchForm.bname,
             uname: this.searchForm.uname,
+            statuCode: this.searchForm.statuCode,
             current: this.current,
             size: this.size,
           },
@@ -221,27 +251,29 @@ export default {
     },
 
     // 逾期还书
-    overdue(id,returnDate) {
-      let now = new Date()
-      returnDate = new Date(returnDate)
-      const overdueDays = parseInt((now-returnDate)/(24*60*60*1000))
-      this.$axios.post("/system/borrow/overdueReturn/"+id+"/"+overdueDays).then((response) => {
-        console.log("response:", response);
-        this.$message({
-          showClose: true,
-          message: "归还成功",
-          type: "success",
-          onClose: () => {
-            //重新请求用户列表
-            this.getOrderList();
-          },
+    overdue(id, returnDate) {
+      let now = new Date();
+      returnDate = new Date(returnDate);
+      const overdueDays = parseInt((now - returnDate) / (24 * 60 * 60 * 1000));
+      this.$axios
+        .post("/system/borrow/overdueReturn/" + id + "/" + overdueDays)
+        .then((response) => {
+          console.log("response:", response);
+          this.$message({
+            showClose: true,
+            message: "归还成功",
+            type: "success",
+            onClose: () => {
+              //重新请求用户列表
+              this.getOrderList();
+            },
+          });
         });
-      });
     },
 
     // 书籍破损
-    breakReturn(id){
-      this.$axios.post("/system/borrow/breakReturn/"+id).then((response) => {
+    breakReturn(id) {
+      this.$axios.post("/system/borrow/breakReturn/" + id).then((response) => {
         console.log("response:", response);
         this.$message({
           showClose: true,
@@ -255,10 +287,9 @@ export default {
       });
     },
 
-
     // 书籍丢失
-    lost(id){
-      this.$axios.post("/system/borrow/lost/"+id).then((response) => {
+    lost(id) {
+      this.$axios.post("/system/borrow/lost/" + id).then((response) => {
         console.log("response:", response);
         this.$message({
           showClose: true,
@@ -287,10 +318,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$axios
-            .post(
-              "/system/borrow/save",
-              this.orderForm
-            )
+            .post("/system/borrow/save", this.orderForm)
             .then((response) => {
               if (response.data.code == 200) {
                 this.$message({
