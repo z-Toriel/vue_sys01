@@ -3,24 +3,11 @@
     <!-- 工具栏 -->
     <el-form ref="form" :model="searchForm" label-width="80px" inline>
       <el-form-item>
-        <el-input
-          v-model="searchForm.bookname"
-          placeholder="请输入书籍的名称"
-        ></el-input>
+        <el-input v-model="searchForm.bookname" placeholder="请输入书籍的名称"></el-input>
       </el-form-item>
       <el-form-item prop="category">
-        <el-select
-          v-model="searchForm.categoryId"
-          filterable
-          clearable
-          placeholder="请选择书籍类型"
-        >
-          <el-option
-            v-for="item in categoryList"
-            :key="item.id"
-            :label="item.label"
-            :value="item.value"
-          >
+        <el-select v-model="searchForm.categoryId" filterable clearable placeholder="请选择书籍类型">
+          <el-option v-for="item in categoryList" :key="item.id" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
         <!-- <el-input v-model="bookForm.category"></el-input> -->
@@ -30,29 +17,18 @@
         <el-button @click="getBookList()">搜索</el-button>
         <!-- TODO:新建需要进行权限验证 -->
 
-        <el-button type="primary" @click="dialogFormVisble = true"
-          >新建</el-button
-        >
+        <el-button type="primary" @click="dialogFormVisble = true">新建</el-button>
         <template>
           <el-popconfirm title="确定删除吗？" @confirm="deleteBook()">
-            <el-button slot="reference" type="danger" :disabled="deleteBtnStu"
-              >批量删除</el-button
-            >
+            <el-button slot="reference" type="danger" :disabled="deleteBtnStu">批量删除</el-button>
           </el-popconfirm>
         </template>
       </el-form-item>
     </el-form>
 
     <!-- 用户的信息表格 -->
-    <el-table
-      :data="tableData"
-      stripe
-      border
-      default-expand-all
-      :cell-style="{ padding: 2 }"
-      style="width: 100%; margin-bottom: 20px"
-      @selection-change="selectionChange"
-    >
+    <el-table :data="tableData" stripe border default-expand-all :cell-style="{ padding: 2 }"
+      style="width: 100%; margin-bottom: 20px" @selection-change="selectionChange">
       <el-table-column type="selection"></el-table-column>
       <el-table-column label="封面" width="110px">
         <template slot-scope="scoped">
@@ -71,32 +47,19 @@
       <el-table-column label="价格" prop="price"></el-table-column>
       <el-table-column label="状态" prop="statu">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.statu == 1" type="success" size="mini"
-            >正常</el-tag
-          >
-          <el-tag v-else-if="scope.row.statu == 0" type="danger" size="mini"
-            >禁用</el-tag
-          >
+          <el-tag v-if="scope.row.statu == 1" type="success" size="mini">正常</el-tag>
+          <el-tag v-else-if="scope.row.statu == 0" type="danger" size="mini">禁用</el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建时间"
-        prop="created"
-        width="180px"
-      ></el-table-column>
+      <el-table-column label="创建时间" prop="created" width="180px"></el-table-column>
 
       <el-table-column label="操作" width="100">
         <template slot-scope="scope">
-          <el-button type="text" @click="editBook(scope.row.id)"
-            >编辑</el-button
-          >
+          <el-button type="text" @click="editBook(scope.row.id)">编辑</el-button>
           <el-divider direction="vertical"></el-divider>
 
           <template>
-            <el-popconfirm
-              title="确定删除该书籍吗？"
-              @confirm="deleteBook(scope.row.id)"
-            >
+            <el-popconfirm title="确定删除该书籍吗？" @confirm="deleteBook(scope.row.id)">
               <el-button slot="reference" type="text">删除</el-button>
             </el-popconfirm>
           </template>
@@ -105,47 +68,23 @@
     </el-table>
 
     <!-- 页码 -->
-    <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="current"
-      :page-sizes="[5, 10, 15, 20]"
-      :page-size="size"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total"
-    >
+    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current"
+      :page-sizes="[5, 10, 15, 20]" :page-size="size" layout="total, sizes, prev, pager, next, jumper" :total="total">
     </el-pagination>
 
     <!-- 新增或编辑用户对话框 -->
-    <el-dialog
-      title="书籍信息"
-      :visible.sync="dialogFormVisble"
-      width="600px"
-      @closed="resetForm('bookForm')"
-    >
-      <el-form
-        ref="bookForm"
-        :model="bookForm"
-        label-width="100px"
-        :rules="rules"
-      >
+    <el-dialog title="书籍信息" :visible.sync="dialogFormVisble" width="600px" @closed="resetForm('bookForm')">
+      <el-form ref="bookForm" :model="bookForm" label-width="100px" :rules="rules">
         <el-form-item label="上传书籍封面">
           <!-- 
           action="服务器接口路径"
           :headers="headers"  headers就是变量中存储 请求需要的token
          -->
-          <el-upload
-            class="avatar-uploader"
-            action="/api/upload"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-            :headers="headers"
-          >
+          <el-upload class="avatar-uploader" action="/api/upload" :show-file-list="false"
+            :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload" :headers="headers">
             <img v-if="bookForm.cover" :src="bookForm.cover" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
-          <!-- {{ imageUrl }} -->
         </el-form-item>
         <el-form-item label="书籍名称" prop="name">
           <el-input v-model="bookForm.name"></el-input>
@@ -154,17 +93,8 @@
           <el-input v-model="bookForm.author"></el-input>
         </el-form-item>
         <el-form-item label="类型" prop="category">
-          <el-select
-            v-model="bookForm.categoryId"
-            filterable
-            placeholder="请选择"
-          >
-            <el-option
-              v-for="item in categoryList"
-              :key="item.id"
-              :label="item.label"
-              :value="item.value"
-            >
+          <el-select v-model="bookForm.categoryId" filterable placeholder="请选择">
+            <el-option v-for="item in categoryList" :key="item.id" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
           <!-- <el-input v-model="bookForm.category"></el-input> -->
@@ -179,19 +109,11 @@
         </el-form-item>
 
         <el-form-item label="数量" prop="total">
-          <el-input-number
-            v-model="bookForm.total"
-            :min="1"
-            :max="10"
-          ></el-input-number>
+          <el-input-number v-model="bookForm.total" :min="1" :max="10"></el-input-number>
         </el-form-item>
 
         <el-form-item label="价格" prop="price">
-          <el-input-number
-            v-model="bookForm.price"
-            :min="0"
-            :max="100"
-          ></el-input-number>
+          <el-input-number v-model="bookForm.price" :min="0" :max="100"></el-input-number>
         </el-form-item>
 
         <el-form-item label="状态" prop="statu">
@@ -297,8 +219,8 @@ export default {
       id
         ? bookIds.push(id)
         : this.selection.forEach((item) => {
-            bookIds.push(item.id);
-          });
+          bookIds.push(item.id);
+        });
       console.log(bookIds);
       this.$axios.post("/system/book/delete", bookIds).then((response) => {
         this.$message({
@@ -387,9 +309,11 @@ export default {
   position: relative;
   overflow: hidden;
 }
+
 .avatar-uploader .el-upload:hover {
   border-color: #409eff;
 }
+
 .avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
@@ -398,6 +322,7 @@ export default {
   line-height: 178px;
   text-align: center;
 }
+
 .avatar {
   width: 178px;
   height: 178px;
