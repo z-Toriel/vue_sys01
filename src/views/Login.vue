@@ -1,11 +1,11 @@
 <template>
   <el-row>
     <el-col :xl="6" :lg="7">
-      <h2>欢迎使用电影后台管理系统</h2>
+      <h2>欢迎使用图书馆后台管理系统</h2>
       <!-- @符号表示src的根目录 -->
       <el-image
         style="width: 180px; height: 180px"
-        :src="require('@/assets/logo.png')"
+        :src="require('@/assets/logo.webp')"
       ></el-image>
       <p>SpringBoot2.0+Vue+2.0+Mysql</p>
       <p>万里学院</p>

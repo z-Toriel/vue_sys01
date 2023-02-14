@@ -4,8 +4,9 @@
       <MenuBar></MenuBar>
     </el-aside>
     <el-container>
+      <!-- 头部份开始 -->
       <el-header class="headerCls">
-        <div class="left" @click="logout">电影网站后台管理系统V1.0</div>
+        <div class="left" @click="logout">图书馆后台管理系统V1.0</div>
         <div class="right">
           <el-avatar
             class="el-avatar"
@@ -33,6 +34,7 @@
           </el-dropdown>
         </div>
       </el-header>
+      <!-- 头部份结束 -->
       
       
       <el-main>
