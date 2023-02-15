@@ -20,6 +20,8 @@ import {
 
 } from './common.js'
 
+import * as echarts from 'echarts'
+Vue.prototype.$echarts = echarts
 
 Vue.config.productionTip = false
 Vue.use(Element)
